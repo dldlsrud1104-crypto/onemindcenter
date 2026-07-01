@@ -1167,3 +1167,154 @@ width:calc(100% - 36px);
   font-size:16px;
   padding:14px 10px;
 }
+/* =======================
+   HOME
+======================= */
+
+.home-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0b0b0b;
+    padding:30px 15px;
+}
+
+.home-wrap{
+    width:100%;
+    max-width:520px;
+    background:#161616;
+    border:1px solid #2d2d2d;
+    border-radius:20px;
+    padding:40px 30px;
+    text-align:center;
+    box-shadow:0 0 40px rgba(0,0,0,.45);
+}
+
+.home-logo{
+    width:260px;
+    margin-bottom:30px;
+}
+
+.home-eng{
+    color:#ef4444;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:3px;
+    margin-bottom:8px;
+}
+
+.home-title{
+    color:#fff;
+    font-size:32px;
+    font-weight:900;
+    margin-bottom:8px;
+}
+
+.home-sub{
+    color:#d1d5db;
+    font-size:18px;
+    margin-bottom:25px;
+}
+
+.home-divider{
+    width:80px;
+    height:4px;
+    background:#ef4444;
+    margin:0 auto 35px;
+    border-radius:20px;
+}
+
+.home-card{
+    margin:35px 0;
+}
+
+
+
+.home-btn-area{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    margin-bottom:30px;
+}
+
+.home-btn{
+    display:block;
+    padding:17px;
+    border-radius:14px;
+    text-decoration:none;
+    font-size:18px;
+    font-weight:800;
+    transition:.25s;
+}
+
+.join-btn{
+    background:#ef4444;
+    color:#fff;
+}
+
+.join-btn:hover{
+    background:#dc2626;
+}
+
+.login-btn{
+    background:#27272a;
+    color:#fff;
+}
+
+.login-btn:hover{
+    background:#3f3f46;
+}
+
+.home-call{
+    border-top:1px solid #333;
+    padding-top:25px;
+}
+
+.home-call h2{
+    color:#fff;
+    margin-bottom:10px;
+    font-size:18px;
+}
+
+.home-call a{
+    color:#ef4444;
+    text-decoration:none;
+    font-size:24px;
+    font-weight:900;
+}
+
+@media(max-width:600px){
+
+.home-wrap{
+    padding:30px 20px;
+}
+
+.home-title{
+    font-size:26px;
+}
+
+.home-item{
+    padding:15px;
+}
+
+.home-btn{
+    font-size:16px;
+}
+
+.home-call a{
+    font-size:20px;
+}
+
+}
+.home-list{
+    margin:35px 0;
+}
+
+.home-list p{
+    color:#f3f4f6;
+    font-size:18px;
+    font-weight:600;
+    margin:18px 0;
+    text-align:center;
+}
