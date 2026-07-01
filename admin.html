@@ -35,22 +35,10 @@
 
     <section class="admin-tab active" id="dashboard">
       <div class="admin-stats">
-        <div class="stat-box">
-          <p>승인대기</p>
-          <h2 id="pendingCount">0</h2>
-        </div>
-        <div class="stat-box">
-          <p>승인기사</p>
-          <h2 id="approvedCount">0</h2>
-        </div>
-        <div class="stat-box">
-          <p>전체기사</p>
-          <h2 id="totalCount">0</h2>
-        </div>
-        <div class="stat-box">
-          <p>익일정산</p>
-          <h2 id="nextDayCount">0</h2>
-        </div>
+        <div class="stat-box"><p>승인대기</p><h2 id="pendingCount">0</h2></div>
+        <div class="stat-box"><p>승인기사</p><h2 id="approvedCount">0</h2></div>
+        <div class="stat-box"><p>전체기사</p><h2 id="totalCount">0</h2></div>
+        <div class="stat-box"><p>익일정산</p><h2 id="nextDayCount">0</h2></div>
       </div>
 
       <div class="admin-panel">
@@ -72,48 +60,43 @@
       </div>
     </section>
 
-<section class="admin-tab" id="settlements">
-  <div class="admin-panel">
-    <h2>정산관리</h2>
+    <section class="admin-tab" id="settlements">
+      <div class="admin-panel">
+        <h2>정산관리</h2>
 
-    <input id="settlementFilterDate" class="admin-input" type="date">
+        <input id="settlementFilterDate" class="admin-input" type="date">
 
-    <select id="settlementFilterType" class="admin-input">
-      <option value="nextDay">익일정산</option>
-      <option value="weekly">주정산</option>
-    </select>
+        <select id="settlementFilterType" class="admin-input">
+          <option value="nextDay">익일정산</option>
+          <option value="weekly">주정산</option>
+        </select>
 
-    <input id="settlementSearch" class="admin-input" placeholder="기사 이름 검색">
+        <input id="settlementSearch" class="admin-input" placeholder="기사 이름 검색">
 
-    <div id="settlementSummary" class="settlement-summary">
-      불러오는 중...
-    </div>
+        <div id="settlementSummary" class="settlement-summary">불러오는 중...</div>
+        <div id="settlementList">불러오는 중...</div>
+      </div>
+    </section>
 
-    <div id="settlementList">
-      불러오는 중...
-    </div>
-  </div>
-</section>
+    <section class="admin-tab" id="excel">
+      <div class="admin-panel">
+        <h2>엑셀 업로드</h2>
 
-  <section class="admin-tab" id="excel">
-  <div class="admin-panel">
-    <h2>엑셀 업로드</h2>
+        <p style="color:#aaa;">쿠팡 익일 정산 엑셀</p>
+        <input id="dailyExcelWorkDate" class="admin-input" type="date">
+        <input id="dailyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
+        <button id="dailyExcelBtn" class="admin-red-btn">익일 엑셀 업로드</button>
 
-    <p style="color:#aaa;">쿠팡 익일 정산 엑셀</p>
-    <input id="dailyExcelWorkDate" class="admin-input" type="date">
-    <input id="dailyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
-    <button id="dailyExcelBtn" class="admin-red-btn">익일 엑셀 업로드</button>
+        <hr style="border:1px solid #222; margin:25px 0;">
 
-    <hr style="border:1px solid #222; margin:25px 0;">
+        <p style="color:#aaa;">쿠팡 주정산 엑셀</p>
+        <input id="weeklyExcelWorkDate" class="admin-input" type="date">
+        <input id="weeklyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
+        <button id="weeklyExcelBtn" class="admin-red-btn">주정산 엑셀 업로드</button>
 
-    <p style="color:#aaa;">쿠팡 주정산 엑셀</p>
-    <input id="weeklyExcelWorkDate" class="admin-input" type="date">
-    <input id="weeklyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
-    <button id="weeklyExcelBtn" class="admin-red-btn">주정산 엑셀 업로드</button>
-
-    <div id="excelMsg" style="margin-top:15px;"></div>
-  </div>
-</section>
+        <div id="excelMsg" style="margin-top:15px;"></div>
+      </div>
+    </section>
 
     <section class="admin-tab" id="notices">
       <div class="admin-panel">
@@ -143,32 +126,112 @@
     </section>
 
   </main>
-<div id="riderEditModal" class="modal">
-  <div class="modal-box">
 
-    <div class="modal-header">
-      <img src="./images/logo.png" class="modal-logo" alt="원마인드 로고">
-      <h2 id="riderEditTitle">기사 정보 수정</h2>
+  <!-- 기사 정보 수정 팝업 -->
+  <div id="riderEditModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <img src="./images/logo.png" class="modal-logo" alt="원마인드 로고">
+        <h2>기사 정보 수정</h2>
+      </div>
+
+      <div class="modal-body">
+        <label>이름</label>
+        <input id="editRiderName" class="admin-input">
+
+        <label>연락처</label>
+        <input id="editRiderPhone" class="admin-input">
+
+        <label>은행</label>
+        <input id="editRiderBank" class="admin-input">
+
+        <label>계좌번호</label>
+        <input id="editRiderAccount" class="admin-input">
+
+        <label>예금주</label>
+        <input id="editRiderOwner" class="admin-input">
+
+        <label>정산방식</label>
+        <select id="editRiderSettlementType" class="admin-input">
+          <option value="nextDay">익일정산</option>
+          <option value="weekly">주정산</option>
+        </select>
+
+        <button id="saveRiderEditBtn" class="admin-red-btn">저장하기</button>
+        <button id="closeRiderEditBtn" class="admin-gray-btn">닫기</button>
+      </div>
     </div>
-
-    <div class="modal-body">
-      <input id="editRiderName" class="admin-input" placeholder="이름">
-      <input id="editRiderPhone" class="admin-input" placeholder="연락처">
-      <input id="editRiderBank" class="admin-input" placeholder="은행">
-      <input id="editRiderAccount" class="admin-input" placeholder="계좌번호">
-      <input id="editRiderOwner" class="admin-input" placeholder="예금주">
-
-      <select id="editRiderSettlementType" class="admin-input">
-        <option value="nextDay">익일정산</option>
-        <option value="weekly">주정산</option>
-      </select>
-
-      <button id="saveRiderEditBtn" class="admin-red-btn">저장하기</button>
-      <button id="closeRiderEditBtn" class="admin-gray-btn">닫기</button>
-    </div>
-
   </div>
-</div>
+
+  <!-- 정산 수정 팝업 -->
+  <div id="settlementEditModal" class="modal">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <img src="./images/logo.png" class="modal-logo" alt="원마인드 로고">
+        <h2>정산 수정</h2>
+      </div>
+
+      <div class="modal-body">
+
+        <div id="editSettlementInfo" style="margin-bottom:15px; color:#111827; font-weight:800;">
+          정산 정보
+        </div>
+
+        <label>배송건수</label>
+        <input id="editDeliveryCount" class="admin-input" type="number">
+
+        <label>수수료</label>
+        <input id="editFeePay" class="admin-input" type="number">
+
+        <label>미션비</label>
+        <input id="editMissionPay" class="admin-input" type="number">
+
+        <label>프로모션</label>
+        <input id="editPromotionPay" class="admin-input" type="number">
+
+        <div id="editTotalPreview" class="settlement-summary">
+          최종 지급액: 0원
+        </div>
+
+        <label>오배송 건수</label>
+        <input id="editWrongCount" class="admin-input" type="number">
+
+        <label>오배송 차감금액</label>
+        <input id="editWrongPay" class="admin-input" type="number">
+
+        <label>오배송 내역</label>
+        <textarea id="editWrongMemo" class="admin-input"></textarea>
+
+        <label>입금상태</label>
+        <select id="editSettlementStatus" class="admin-input">
+          <option value="pending">입금대기</option>
+          <option value="paid">입금완료</option>
+        </select>
+
+        <button id="saveSettlementEditBtn" class="admin-red-btn">저장하기</button>
+        <button id="closeSettlementEditBtn" class="admin-gray-btn">닫기</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 정산서 보기 팝업 -->
+  <div id="settlementViewModal" class="modal">
+    <div class="modal-box settlement-view-box">
+
+      <div class="modal-header">
+        <img src="./images/logo.png" class="modal-logo" alt="원마인드 로고">
+        <h2>원마인드 정산서</h2>
+      </div>
+
+      <div id="settlementViewBody" class="modal-body"></div>
+
+      <button id="closeSettlementViewBtn" class="admin-gray-btn">닫기</button>
+
+    </div>
+  </div>
+
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>

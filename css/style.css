@@ -1147,3 +1147,23 @@ width:calc(100% - 36px);
 .admin-gray-btn:hover{
   background:#4b5563;
 }
+.modal-body label{
+  display:block;
+  margin:12px 0 6px;
+  color:#111827;
+  font-weight:900;
+  font-size:14px;
+}
+.settlement-view-box{
+  max-width:850px !important;
+  width:95% !important;
+}
+
+#settlementViewBody{
+  padding:24px;
+}
+
+.settlement-view-box .modal-table td{
+  font-size:16px;
+  padding:14px 10px;
+}

@@ -46,6 +46,7 @@ const promoSection = document.getElementById("promoSection");
 const profileBtn = document.getElementById("profileBtn");
 const profileSection = document.getElementById("profileSection");
 const profileInfo = document.getElementById("profileInfo");
+const settlementDateFilter = document.getElementById("settlementDateFilter");
 
 let currentUid = null;
 let currentRider = null;
@@ -155,19 +156,57 @@ function renderSummary(settlements) {
 }
 
 /* 정산 목록 */
+let mySettlements = [];
+
 function renderSettlementList(settlements) {
   if (!settlementList) return;
 
+  mySettlements = [...settlements].sort((a, b) =>
+    (b.workDate || "").localeCompare(a.workDate || "")
+  );
+
+  renderDateFilter(mySettlements);
+  renderFilteredSettlements();
+}
+
+function renderDateFilter(settlements) {
+  if (!settlementDateFilter) return;
+
+  const currentValue = settlementDateFilter.value || "all";
+  const dates = [...new Set(settlements.map((s) => s.workDate).filter(Boolean))];
+
+  settlementDateFilter.innerHTML = `<option value="all">전체 날짜</option>`;
+
+  dates.forEach((date) => {
+    settlementDateFilter.innerHTML += `
+      <option value="${date}">${date}</option>
+    `;
+  });
+
+  settlementDateFilter.value = dates.includes(currentValue) ? currentValue : "all";
+}
+
+function renderFilteredSettlements() {
+  if (!settlementList) return;
+
+  const selectedDate = settlementDateFilter?.value || "all";
+
+  const list =
+    selectedDate === "all"
+      ? mySettlements
+      : mySettlements.filter((s) => s.workDate === selectedDate);
+
   settlementList.innerHTML = "";
 
-  if (settlements.length === 0) {
-    settlementList.innerText = "아직 정산내역이 없습니다.";
+  if (list.length === 0) {
+    settlementList.innerText = "해당 날짜 정산내역이 없습니다.";
     return;
   }
 
-  settlements.forEach((item) => {
+  list.forEach((item) => {
     const div = document.createElement("div");
     div.className = "list-item settlement-item";
+    div.style.cursor = "pointer";
 
     div.innerHTML = `
       <div class="settlement-card-top">
@@ -182,23 +221,28 @@ function renderSettlementList(settlements) {
       </div>
 
       <div class="settlement-card-info">
-        지급일 ${item.payDate || "-"} · 배송 ${Number(item.deliveryCount || 0).toLocaleString()}건
+        지급일 ${item.payDate || "-"}<br>
+        배송 ${Number(item.deliveryCount || 0).toLocaleString()}건
         ${
           Number(item.wrongDeliveryCount || 0) > 0
             ? `<br>오배송 ${Number(item.wrongDeliveryCount || 0).toLocaleString()}건 / -${Number(item.wrongDeliveryPay || 0).toLocaleString()}원`
             : ""
         }
+        <br><br>
+        <span style="font-weight:800;">터치하면 정산서 보기 ›</span>
       </div>
-
-      <button class="small-btn settlement-view-btn">정산서 보기</button>
     `;
 
-    div.querySelector(".settlement-view-btn").onclick = () => {
+    div.onclick = () => {
       openSettlementModal(item);
     };
 
     settlementList.appendChild(div);
   });
+}
+
+if (settlementDateFilter) {
+  settlementDateFilter.onchange = renderFilteredSettlements;
 }
 
 /* 정산서 팝업 */
@@ -215,11 +259,11 @@ function openSettlementModal(item) {
 <tr><td>운행일</td><td>${item.workDate || "-"}</td></tr>
 <tr><td>지급일</td><td>${item.payDate || "-"}</td></tr>
 <tr><td>배송건수</td><td>${Number(item.deliveryCount || 0).toLocaleString()}건</td></tr>
-
-<tr><td>쿠팡 지급액</td><td>${Number(item.coupangPay || 0).toLocaleString()}원</td></tr>
-
 <tr><td>오배송</td><td>${Number(item.wrongDeliveryCount || 0).toLocaleString()}건</td></tr>
 <tr><td>오배송 차감금액</td><td>-${Number(item.wrongDeliveryPay || 0).toLocaleString()}원</td></tr>
+<tr><td>쿠팡 지급액</td><td>${Number(item.coupangPay || 0).toLocaleString()}원</td></tr>
+
+
 
 <tr><td>산재</td><td>-${Number(item.industrialPay || 0).toLocaleString()}원</td></tr>
 <tr><td>고용</td><td>-${Number(item.employmentPay || 0).toLocaleString()}원</td></tr>

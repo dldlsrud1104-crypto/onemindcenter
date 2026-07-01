@@ -15,6 +15,10 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
+/* =========================
+   기본 요소
+========================= */
+
 const riderList = document.getElementById("riderList");
 const recentRiders = document.getElementById("recentRiders");
 const dashboardRiderList = document.getElementById("dashboardRiderList");
@@ -32,16 +36,48 @@ const settlementSummary = document.getElementById("settlementSummary");
 const settlementFilterDate = document.getElementById("settlementFilterDate");
 const settlementFilterType = document.getElementById("settlementFilterType");
 const settlementSearch = document.getElementById("settlementSearch");
+
+/* 기사 수정 모달 */
 const riderEditModal = document.getElementById("riderEditModal");
 const saveRiderEditBtn = document.getElementById("saveRiderEditBtn");
 const closeRiderEditBtn = document.getElementById("closeRiderEditBtn");
 
+/* 정산 수정 모달 */
+const settlementEditModal = document.getElementById("settlementEditModal");
+const saveSettlementEditBtn = document.getElementById("saveSettlementEditBtn");
+const closeSettlementEditBtn = document.getElementById("closeSettlementEditBtn");
+
+/* 정산서 보기 모달 */
+const settlementViewModal = document.getElementById("settlementViewModal");
+const settlementViewBody = document.getElementById("settlementViewBody");
+const closeSettlementViewBtn = document.getElementById("closeSettlementViewBtn");
+
+/* 프로모션 */
+const savePromoBtn = document.getElementById("savePromoBtn");
+const promoTitle = document.getElementById("promoTitle");
+const promoContent = document.getElementById("promoContent");
+const promoAdminList = document.getElementById("promoAdminList");
+
+/* 공지 */
+const saveNoticeBtn = document.getElementById("saveNoticeBtn");
+const noticeTitle = document.getElementById("noticeTitle");
+const noticeContent = document.getElementById("noticeContent");
+const noticeAdminList = document.getElementById("noticeAdminList");
+
 let editingRiderUid = null;
+let editingSettlement = null;
+
 let allRiders = [];
 let allSettlements = [];
 
+/* =========================
+   로그인 확인 / 로그아웃
+========================= */
+
 onAuthStateChanged(auth, (user) => {
-  if (!user) location.href = "auth.html";
+  if (!user) {
+    location.href = "auth.html";
+  }
 });
 
 if (logoutBtn) {
@@ -51,17 +87,31 @@ if (logoutBtn) {
   };
 }
 
+/* =========================
+   탭 전환
+========================= */
+
 document.querySelectorAll(".side-btn").forEach((btn) => {
   btn.onclick = () => {
-    document.querySelectorAll(".side-btn").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".admin-tab").forEach((t) => t.classList.remove("active"));
+    document.querySelectorAll(".side-btn").forEach((b) => {
+      b.classList.remove("active");
+    });
+
+    document.querySelectorAll(".admin-tab").forEach((t) => {
+      t.classList.remove("active");
+    });
 
     btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
+
+    const tab = document.getElementById(btn.dataset.tab);
+    if (tab) tab.classList.add("active");
   };
 });
 
-/* 기사 불러오기 */
+/* =========================
+   기사 불러오기
+========================= */
+
 onSnapshot(collection(db, "users"), (snapshot) => {
   allRiders = [];
 
@@ -72,10 +122,12 @@ onSnapshot(collection(db, "users"), (snapshot) => {
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
 
-    allRiders.push({
+    const rider = {
       uid: docSnap.id,
       ...data
-    });
+    };
+
+    allRiders.push(rider);
 
     if (data.status === "pending") pending++;
     if (data.status === "approved") approved++;
@@ -186,12 +238,12 @@ function renderRiders(riders) {
       <p><b>예금주:</b> ${rider.owner || "-"}</p>
       <p><b>상태:</b> ${statusText(rider.status)}</p>
 
-    <div class="admin-actions">
-  <button class="approve-btn">승인</button>
-  <button class="reject-btn">거절</button>
-  <button class="edit-rider-btn">정보수정</button>
-  <button class="rider-delete-btn">삭제</button>
-</div>
+      <div class="admin-actions">
+        <button class="approve-btn">승인</button>
+        <button class="reject-btn">거절</button>
+        <button class="edit-rider-btn">정보수정</button>
+        <button class="rider-delete-btn">삭제</button>
+      </div>
     `;
 
     card.querySelector(".approve-btn").onclick = async () => {
@@ -210,8 +262,12 @@ function renderRiders(riders) {
       alert("거절 완료");
     };
 
+    card.querySelector(".edit-rider-btn").onclick = () => {
+      openRiderEditModal(rider);
+    };
+
     card.querySelector(".rider-delete-btn").onclick = async () => {
-      const ok = confirm(`${rider.name} 기사님을 삭제할까요?\n삭제하면 기사 목록에서 사라집니다.`);
+      const ok = confirm(`${rider.name || "-"} 기사님을 삭제할까요?\n삭제하면 기사 목록에서 사라집니다.`);
 
       if (!ok) return;
 
@@ -219,20 +275,6 @@ function renderRiders(riders) {
 
       alert("기사 삭제 완료");
     };
-
-card.querySelector(".edit-rider-btn").onclick = () => {
-  editingRiderUid = rider.uid;
-
-  document.getElementById("editRiderName").value = rider.name || "";
-  document.getElementById("editRiderPhone").value = rider.phone || "";
-  document.getElementById("editRiderBank").value = rider.bank || "";
-  document.getElementById("editRiderAccount").value = rider.account || "";
-  document.getElementById("editRiderOwner").value = rider.owner || "";
-  document.getElementById("editRiderSettlementType").value =
-    rider.settlementType || "weekly";
-
-  riderEditModal.style.display = "block";
-};
 
     riderList.appendChild(card);
   });
@@ -252,6 +294,56 @@ if (searchInput) {
   };
 }
 
+function openRiderEditModal(rider) {
+  if (!riderEditModal) return;
+
+  editingRiderUid = rider.uid;
+
+  document.getElementById("editRiderName").value = rider.name || "";
+  document.getElementById("editRiderPhone").value = rider.phone || "";
+  document.getElementById("editRiderBank").value = rider.bank || "";
+  document.getElementById("editRiderAccount").value = rider.account || "";
+  document.getElementById("editRiderOwner").value = rider.owner || "";
+  document.getElementById("editRiderSettlementType").value =
+    rider.settlementType || "weekly";
+
+  riderEditModal.style.display = "block";
+}
+
+if (closeRiderEditBtn) {
+  closeRiderEditBtn.onclick = () => {
+    riderEditModal.style.display = "none";
+    editingRiderUid = null;
+  };
+}
+
+if (saveRiderEditBtn) {
+  saveRiderEditBtn.onclick = async () => {
+    if (!editingRiderUid) return;
+
+    const name = document.getElementById("editRiderName").value.trim();
+    const phone = document.getElementById("editRiderPhone").value.trim();
+    const bank = document.getElementById("editRiderBank").value.trim();
+    const account = document.getElementById("editRiderAccount").value.trim();
+    const owner = document.getElementById("editRiderOwner").value.trim();
+    const settlementType = document.getElementById("editRiderSettlementType").value;
+
+    await updateDoc(doc(db, "users", editingRiderUid), {
+      name,
+      phone,
+      bank,
+      account,
+      owner,
+      settlementType
+    });
+
+    alert("기사 정보가 수정되었습니다.");
+
+    riderEditModal.style.display = "none";
+    editingRiderUid = null;
+  };
+}
+
 function statusText(status) {
   if (status === "approved") return "승인완료";
   if (status === "pending") return "승인대기";
@@ -259,7 +351,10 @@ function statusText(status) {
   return status || "확인필요";
 }
 
-/* 정산관리 */
+/* =========================
+   정산관리
+========================= */
+
 if (settlementList) {
   onSnapshot(collection(db, "settlements"), (snapshot) => {
     allSettlements = [];
@@ -297,15 +392,21 @@ function renderSettlementList() {
     .sort((a, b) => (b.workDate || "").localeCompare(a.workDate || ""));
 
   const totalCount = list.length;
-  const totalDelivery = list.reduce((sum, item) => sum + Number(item.deliveryCount || 0), 0);
-  const totalPay = list.reduce((sum, item) => sum + Number(item.totalPay || 0), 0);
+  const totalDelivery = list.reduce(
+    (sum, item) => sum + Number(item.deliveryCount || 0),
+    0
+  );
+  const totalPaySum = list.reduce(
+    (sum, item) => sum + Number(item.totalPay || 0),
+    0
+  );
   const paidCount = list.filter((item) => item.status === "paid").length;
   const pendingPayCount = totalCount - paidCount;
 
   if (settlementSummary) {
     settlementSummary.innerHTML = `
       <b>${type === "nextDay" ? "익일정산" : "주정산"}</b><br>
-      기사 ${totalCount}명 · 배송 ${totalDelivery.toLocaleString()}건 · 총 지급 ${totalPay.toLocaleString()}원<br>
+      기사 ${totalCount}명 · 배송 ${totalDelivery.toLocaleString()}건 · 총 지급 ${totalPaySum.toLocaleString()}원<br>
       입금완료 ${paidCount}명 · 입금대기 ${pendingPayCount}명
     `;
   }
@@ -322,13 +423,12 @@ function renderSettlementList() {
           <th>기사명</th>
           <th>운행일</th>
           <th>배송건수</th>
-          <th>오배달</th>
-          <th>오배달 차감</th>
+          <th>오배송</th>
+          <th>오배송 차감</th>
           <th>지급액</th>
           <th>상태</th>
           <th>보기</th>
           <th>수정</th>
-          <th>처리</th>
           <th>삭제</th>
         </tr>
       </thead>
@@ -355,101 +455,23 @@ function renderSettlementList() {
 
       <td><button class="view-btn">보기</button></td>
       <td><button class="edit-btn">수정</button></td>
-
-      <td>
-        ${
-          item.status === "paid"
-            ? `<span style="color:#22c55e;font-weight:bold;">🟢 입금완료</span>`
-            : `<button class="pay-btn">입금완료</button>`
-        }
-      </td>
-
       <td><button class="delete-btn">삭제</button></td>
     `;
 
     tr.querySelector(".view-btn").onclick = () => {
-      alert(`원마인드 정산서
-
-기사명: ${item.name}
-운행일: ${item.workDate}
-지급일: ${item.payDate}
-
-배송건수: ${Number(item.deliveryCount || 0).toLocaleString()}건
-쿠팡 지급액: ${Number(item.coupangPay || 0).toLocaleString()}원
-공제/수수료: ${Number(item.deductPay || 0).toLocaleString()}원
-산재: ${Number(item.industrialPay || 0).toLocaleString()}원
-고용: ${Number(item.employmentPay || 0).toLocaleString()}원
-원천세: ${Number(item.taxPay || 0).toLocaleString()}원
-미션비: ${Number(item.missionPay || 0).toLocaleString()}원
-프로모션: ${Number(item.promotionPay || 0).toLocaleString()}원
-
-오배달 건수: ${Number(item.wrongDeliveryCount || 0).toLocaleString()}건
-오배달 차감: -${Number(item.wrongDeliveryPay || 0).toLocaleString()}원
-오배달 메모: ${item.wrongDeliveryMemo || "-"}
-
-최종 지급액: ${Number(item.totalPay || 0).toLocaleString()}원`);
+      openSettlementViewModal(item);
     };
 
-    tr.querySelector(".edit-btn").onclick = async () => {
-  const wrongDeliveryCount = Number(
-    prompt("오배달 건수", item.wrongDeliveryCount || 0) || 0
-  );
-
-  const wrongDeliveryPay = Number(
-    prompt("오배달 차감금액", item.wrongDeliveryPay || 0) || 0
-  );
-
-  const wrongDeliveryMemo =
-    prompt("오배달 메모", item.wrongDeliveryMemo || "") || "";
-
-  await updateDoc(doc(db, "settlements", item.id), {
-    wrongDeliveryCount,
-    wrongDeliveryPay,
-    wrongDeliveryMemo
-  });
-
-  allSettlements = allSettlements.map((s) => {
-    if (s.id === item.id) {
-      return {
-        ...s,
-        wrongDeliveryCount,
-        wrongDeliveryPay,
-        wrongDeliveryMemo
-      };
-    }
-    return s;
-  });
-
-  renderSettlementList();
-
-  alert("오배달 정보 저장 완료");
-};
-
-    const payBtn = tr.querySelector(".pay-btn");
-
-    if (payBtn) {
-      payBtn.onclick = async () => {
-        const ok = confirm(`${item.name} 기사님을 입금완료 처리할까요?`);
-
-        if (!ok) return;
-
-        await updateDoc(doc(db, "settlements", item.id), {
-          status: "paid"
-        });
-
-        alert("입금완료 처리되었습니다.");
-      };
-    }
+    tr.querySelector(".edit-btn").onclick = () => {
+      openSettlementEditModal(item);
+    };
 
     tr.querySelector(".delete-btn").onclick = async () => {
-      const ok = confirm(`${item.name}님의 정산을 삭제할까요?`);
+      const ok = confirm(`${item.name || "-"}님의 정산을 삭제할까요?`);
 
       if (!ok) return;
 
       await deleteDoc(doc(db, "settlements", item.id));
-
-      allSettlements = allSettlements.filter((s) => s.id !== item.id);
-      renderSettlementList();
 
       alert("삭제되었습니다.");
     };
@@ -458,10 +480,240 @@ function renderSettlementList() {
   });
 }
 
-const savePromoBtn = document.getElementById("savePromoBtn");
-const promoTitle = document.getElementById("promoTitle");
-const promoContent = document.getElementById("promoContent");
-const promoAdminList = document.getElementById("promoAdminList");
+function openSettlementViewModal(item) {
+  if (!settlementViewModal || !settlementViewBody) return;
+
+  settlementViewBody.innerHTML = `
+    <table class="modal-table">
+      <tr><td>기사명</td><td>${item.name || "-"}</td></tr>
+      <tr><td>운행일</td><td>${item.workDate || "-"}</td></tr>
+      <tr><td>지급일</td><td>${item.payDate || "-"}</td></tr>
+
+      <tr><td>배송건수</td><td>${Number(item.deliveryCount || 0).toLocaleString()}건</td></tr>
+      <tr><td>오배송</td><td>${Number(item.wrongDeliveryCount || 0).toLocaleString()}건</td></tr>
+      <tr><td>오배송 차감금액</td><td>-${Number(item.wrongDeliveryPay || 0).toLocaleString()}원</td></tr>
+
+      <tr><td>쿠팡 지급액</td><td>${Number(item.coupangPay || 0).toLocaleString()}원</td></tr>
+      <tr><td>수수료</td><td>-${Number(item.feePay || 0).toLocaleString()}원</td></tr>
+      <tr><td>산재</td><td>-${Number(item.industrialPay || 0).toLocaleString()}원</td></tr>
+      <tr><td>고용</td><td>-${Number(item.employmentPay || 0).toLocaleString()}원</td></tr>
+      <tr><td>원천세</td><td>-${Number(item.taxPay || 0).toLocaleString()}원</td></tr>
+
+      <tr><td>미션비</td><td>${Number(item.missionPay || 0).toLocaleString()}원</td></tr>
+      <tr><td>프로모션</td><td>${Number(item.promotionPay || 0).toLocaleString()}원</td></tr>
+
+      <tr><td>오배송 내역</td><td>${item.wrongDeliveryMemo || "-"}</td></tr>
+    </table>
+
+    <div class="modal-total">
+      최종 지급액<br>
+      ${Number(item.totalPay || 0).toLocaleString()}원
+    </div>
+
+    <div class="modal-status">
+      ${item.status === "paid" ? "🟢 입금완료" : "🟡 입금대기"}
+    </div>
+  `;
+
+  settlementViewModal.style.display = "block";
+}
+
+if (closeSettlementViewBtn) {
+  closeSettlementViewBtn.onclick = () => {
+    settlementViewModal.style.display = "none";
+  };
+}
+
+function openSettlementEditModal(item) {
+  if (!settlementEditModal) return;
+
+  editingSettlement = item;
+
+  document.getElementById("editSettlementInfo").innerHTML = `
+    👤 <b>${item.name || "-"}</b><br>
+    📅 ${item.workDate || "-"}<br>
+    💳 ${item.settlementType === "nextDay" ? "익일정산" : "주정산"}
+  `;
+
+  document.getElementById("editDeliveryCount").value = item.deliveryCount || 0;
+  document.getElementById("editFeePay").value = item.feePay || 0;
+  document.getElementById("editMissionPay").value = item.missionPay || 0;
+  document.getElementById("editPromotionPay").value = item.promotionPay || 0;
+  document.getElementById("editWrongCount").value = item.wrongDeliveryCount || 0;
+  document.getElementById("editWrongPay").value = item.wrongDeliveryPay || 0;
+  document.getElementById("editWrongMemo").value = item.wrongDeliveryMemo || "";
+  document.getElementById("editSettlementStatus").value = item.status || "pending";
+
+  updateSettlementEditPreview();
+
+  settlementEditModal.style.display = "block";
+}
+
+function updateSettlementEditPreview() {
+  if (!editingSettlement) return 0;
+
+  const coupangPay = Number(editingSettlement.coupangPay || 0);
+  const feePay = Number(document.getElementById("editFeePay").value || 0);
+  const industrialPay = Number(editingSettlement.industrialPay || 0);
+  const employmentPay = Number(editingSettlement.employmentPay || 0);
+  const taxPay = Number(editingSettlement.taxPay || 0);
+  const missionPay = Number(document.getElementById("editMissionPay").value || 0);
+  const promotionPay = Number(document.getElementById("editPromotionPay").value || 0);
+
+  const totalPay =
+    coupangPay
+    - feePay
+    - industrialPay
+    - employmentPay
+    - taxPay
+    + missionPay
+    + promotionPay;
+
+  const preview = document.getElementById("editTotalPreview");
+
+  if (preview) {
+    preview.innerHTML = `
+      쿠팡 지급액: ${coupangPay.toLocaleString()}원<br>
+      수수료: -${feePay.toLocaleString()}원<br>
+      산재: -${industrialPay.toLocaleString()}원<br>
+      고용: -${employmentPay.toLocaleString()}원<br>
+      원천세: -${taxPay.toLocaleString()}원<br>
+      미션비: +${missionPay.toLocaleString()}원<br>
+      프로모션: +${promotionPay.toLocaleString()}원<br><br>
+      최종 지급액: <b>${totalPay.toLocaleString()}원</b>
+    `;
+  }
+
+  return totalPay;
+}
+
+["editMissionPay", "editPromotionPay", "editFeePay"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.oninput = updateSettlementEditPreview;
+  }
+});
+
+if (closeSettlementEditBtn) {
+  closeSettlementEditBtn.onclick = () => {
+    settlementEditModal.style.display = "none";
+    editingSettlement = null;
+  };
+}
+
+if (saveSettlementEditBtn) {
+  saveSettlementEditBtn.onclick = async () => {
+    if (!editingSettlement) {
+      alert("수정할 정산을 찾을 수 없습니다.");
+      return;
+    }
+
+    const deliveryCount = Number(document.getElementById("editDeliveryCount").value || 0);
+    const feePay = Number(document.getElementById("editFeePay").value || 0);
+    const missionPay = Number(document.getElementById("editMissionPay").value || 0);
+    const promotionPay = Number(document.getElementById("editPromotionPay").value || 0);
+    const wrongDeliveryCount = Number(document.getElementById("editWrongCount").value || 0);
+    const wrongDeliveryPay = Number(document.getElementById("editWrongPay").value || 0);
+    const wrongDeliveryMemo = document.getElementById("editWrongMemo").value.trim();
+    const status = document.getElementById("editSettlementStatus").value;
+
+    const totalPay = updateSettlementEditPreview();
+
+    await updateDoc(doc(db, "settlements", editingSettlement.id), {
+      deliveryCount,
+      feePay,
+      missionPay,
+      promotionPay,
+      wrongDeliveryCount,
+      wrongDeliveryPay,
+      wrongDeliveryMemo,
+      status,
+      totalPay
+    });
+
+    alert("정산 수정 완료");
+
+    settlementEditModal.style.display = "none";
+    editingSettlement = null;
+  };
+}
+
+/* =========================
+   공지관리
+========================= */
+
+if (saveNoticeBtn) {
+  saveNoticeBtn.onclick = async () => {
+    const title = noticeTitle.value.trim();
+    const content = noticeContent.value.trim();
+
+    if (!title || !content) {
+      alert("공지 제목과 내용을 입력해주세요.");
+      return;
+    }
+
+    await addDoc(collection(db, "notice"), {
+      title,
+      content,
+      createdAt: serverTimestamp()
+    });
+
+    noticeTitle.value = "";
+    noticeContent.value = "";
+
+    alert("공지 등록 완료");
+  };
+}
+
+if (noticeAdminList) {
+  onSnapshot(collection(db, "notice"), (snapshot) => {
+    noticeAdminList.innerHTML = "";
+
+    if (snapshot.empty) {
+      noticeAdminList.innerText = "등록된 공지가 없습니다.";
+      return;
+    }
+
+    const notices = [];
+
+    snapshot.forEach((docSnap) => {
+      notices.push({
+        id: docSnap.id,
+        ...docSnap.data()
+      });
+    });
+
+    notices.sort((a, b) => {
+      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+    });
+
+    notices.forEach((notice) => {
+      const div = document.createElement("div");
+      div.className = "admin-card";
+
+      div.innerHTML = `
+        <h3>${notice.title || "-"}</h3>
+        <p style="color:#aaa;">등록일: ${formatDateTime(notice.createdAt)}</p>
+        <p>${notice.content || ""}</p>
+        <button class="delete-btn notice-delete-btn">삭제</button>
+      `;
+
+      div.querySelector(".notice-delete-btn").onclick = async () => {
+        const ok = confirm("이 공지를 삭제할까요?");
+        if (!ok) return;
+
+        await deleteDoc(doc(db, "notice", notice.id));
+        alert("삭제되었습니다.");
+      };
+
+      noticeAdminList.appendChild(div);
+    });
+  });
+}
+
+/* =========================
+   프로모션 관리
+========================= */
 
 if (savePromoBtn) {
   savePromoBtn.onclick = async () => {
@@ -474,8 +726,8 @@ if (savePromoBtn) {
     }
 
     await addDoc(collection(db, "promotions"), {
-      title: title,
-      content: content,
+      title,
+      content,
       createdAt: serverTimestamp()
     });
 
@@ -532,6 +784,10 @@ if (promoAdminList) {
   });
 }
 
+/* =========================
+   공통 함수
+========================= */
+
 function formatDateTime(timestamp) {
   if (!timestamp) return "-";
 
@@ -544,35 +800,4 @@ function formatDateTime(timestamp) {
     hour: "2-digit",
     minute: "2-digit"
   });
-}
-if (closeRiderEditBtn) {
-  closeRiderEditBtn.onclick = () => {
-    riderEditModal.style.display = "none";
-  };
-}
-
-if (saveRiderEditBtn) {
-  saveRiderEditBtn.onclick = async () => {
-    if (!editingRiderUid) return;
-
-    const name = document.getElementById("editRiderName").value.trim();
-    const phone = document.getElementById("editRiderPhone").value.trim();
-    const bank = document.getElementById("editRiderBank").value.trim();
-    const account = document.getElementById("editRiderAccount").value.trim();
-    const owner = document.getElementById("editRiderOwner").value.trim();
-    const settlementType = document.getElementById("editRiderSettlementType").value;
-
-    await updateDoc(doc(db, "users", editingRiderUid), {
-      name,
-      phone,
-      bank,
-      account,
-      owner,
-      settlementType
-    });
-
-    alert("기사 정보가 수정되었습니다.");
-    riderEditModal.style.display = "none";
-    editingRiderUid = null;
-  };
 }
