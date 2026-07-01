@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원마인드 기사센터</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<section class="rider-page">
+
+  <header class="rider-header">
+
+  <img src="./images/logo.png"
+       class="rider-logo"
+       alt="원마인드 로고">
+
+  <div class="header-btns">
+
+    <button id="profileBtn" class="profile-mini">
+      👤 내 정보
+    </button>
+
+    <button id="logoutBtn" class="logout-mini">
+      로그아웃
+    </button>
+
+  </div>
+
+</header>
+
+  <div class="rider-container">
+
+    <div class="welcome-card">
+      <p>ONE MIND RIDER CENTER</p>
+      <h1 id="riderName">기사님 👋</h1>
+      <span id="settlementTypeText">정산방식 확인중...</span>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card red">
+        <p>💰 오늘 정산예정금</p>
+        <h2 id="todayAmount">0원</h2>
+      </div>
+
+      <div class="summary-card green">
+        <p>🟢 입금상태</p>
+        <h2 id="paymentStatus">입금대기</h2>
+      </div>
+    </div>
+
+    <div class="menu-grid">
+      <div class="rider-menu-card" id="settlementBtn">
+        <h3>💳 정산내역</h3>
+        <p>내 정산 확인</p>
+      </div>
+
+      <div class="rider-menu-card" id="noticeBtn">
+        <h3>📢 공지사항 <span id="noticeNew" class="new-badge">NEW</span></h3>
+        <p>센터 공지 확인</p>
+      </div>
+
+      <div class="rider-menu-card" id="promoBtn">
+        <h3>🎁 프로모션 <span id="promoNew" class="new-badge">NEW</span></h3>
+        <p>진행 이벤트</p>
+      </div>
+
+      <div class="rider-menu-card" id="contactBtn">
+        <h3>📞 문의하기</h3>
+        <p>운영팀 문의</p>
+      </div>
+    </div>
+
+    <div class="rider-section active" id="settlementSection">
+      <div class="panel">
+        <h2>💳 최근 정산</h2>
+        <div id="settlementList" class="list-box">아직 정산내역이 없습니다.</div>
+      </div>
+    </div>
+
+    <div class="rider-section" id="noticeSection">
+      <div class="panel">
+        <h2>📢 최근 공지</h2>
+        <div id="noticeList" class="list-box">불러오는 중...</div>
+      </div>
+    </div>
+
+    <div class="rider-section" id="promoSection">
+      <div class="panel">
+        <h2>🎁 진행중인 프로모션</h2>
+        <div id="promoList" class="list-box">불러오는 중...</div>
+      </div>
+    </div>
+
+    <div class="rider-section" id="contactSection">
+  <div class="panel">
+    <h2>👤 내 정보</h2>
+    <div id="profileInfo" class="list-box">불러오는 중...</div>
+  </div>
+</div>
+
+    <div class="rider-section" id="profileSection">
+  <div class="panel">
+    <h2>👤 내 정보</h2>
+    <div id="profileInfo" class="list-box">불러오는 중...</div>
+  </div>
+</div>
+
+  </div>
+
+  <div id="settlementModal" class="modal">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <img src="./images/logo.png" class="modal-logo">
+        <h2 id="modalTitle">원마인드 정산서</h2>
+      </div>
+
+      <div id="modalBody"></div>
+
+      <button id="closeModal" class="admin-red-btn">
+        닫기
+      </button>
+
+    </div>
+  </div>
+
+</section>
+
+<script type="module" src="js/rider.js"></script>
+
+</body>
+</html>

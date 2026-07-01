@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원마인드 로그인</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+
+.login-page{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+background:
+linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.85)),
+radial-gradient(circle,#500000 0%,#050505 70%);
+}
+
+.login-box{
+
+width:420px;
+
+background:#111;
+
+border:1px solid #2b2b2b;
+
+border-radius:20px;
+
+padding:40px;
+
+text-align:center;
+
+box-shadow:0 20px 60px rgba(0,0,0,.4);
+
+}
+
+.login-box img{
+
+width:260px;
+    height:auto;
+    display:block;
+    margin:0 auto 25px;
+
+}
+
+.login-box h2{
+
+margin-bottom:30px;
+
+font-size:30px;
+
+}
+
+.input-group{
+
+margin-bottom:18px;
+
+}
+
+.input-group input{
+
+width:100%;
+
+padding:15px;
+
+background:#1d1d1d;
+
+border:1px solid #333;
+
+border-radius:10px;
+
+color:white;
+
+font-size:16px;
+
+}
+
+.input-group input:focus{
+
+outline:none;
+
+border-color:#e50914;
+
+}
+
+button{
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:10px;
+
+background:#e50914;
+
+color:white;
+
+font-size:17px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+button:hover{
+
+background:#c80711;
+
+}
+
+#msg{
+
+margin-top:20px;
+
+color:#ddd;
+
+}
+
+.register-link{
+
+margin-top:25px;
+
+display:block;
+
+color:#aaa;
+
+}
+
+.register-link:hover{
+
+color:#fff;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<section class="login-page">
+
+<div class="login-box">
+
+<img src="images/logo.png" class="login-logo" alt="로고">
+
+<h2>기사 로그인</h2>
+
+<div class="input-group">
+
+<input
+id="id"
+placeholder="아이디">
+
+</div>
+
+<div class="input-group">
+
+<input
+id="pw"
+type="password"
+placeholder="비밀번호">
+
+</div>
+
+<button id="loginBtn">
+
+로그인
+
+</button>
+
+<p id="msg"></p>
+
+<a
+class="register-link"
+href="register.html">
+
+회원가입 →
+
+</a>
+
+</div>
+
+</section>
+
+<script type="module" src="js/login.js"></script>
+
+</body>
+</html>

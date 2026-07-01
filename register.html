@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원마인드 기사 회원가입</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<section class="login-page">
+  <div class="login-box register-box">
+
+    <img src="./images/logo.png" class="login-logo" alt="원마인드 로고">
+
+    <h2>기사 회원가입</h2>
+
+    <input id="name" placeholder="이름">
+    <input id="phone" placeholder="연락처">
+    <input id="id" placeholder="아이디">
+    <input id="pw" type="password" placeholder="비밀번호 (6자리 이상)">
+    <input id="pw2" type="password" placeholder="비밀번호 확인 (6자리 이상)">
+
+    <select id="settlementType">
+      <option value="weekly">주정산</option>
+      <option value="nextDay">익일정산</option>
+    </select>
+
+  
+<input id="bank" class="auth-input" placeholder="은행명 입력 (예: 카카오뱅크)">
+    <input id="account" placeholder="계좌번호">
+    <input id="owner" placeholder="예금주">
+
+
+    <label class="agree">
+      <input type="checkbox" id="agree">
+      개인정보 이용에 동의합니다
+    </label>
+
+    <button id="signupBtn">회원가입</button>
+
+    <p id="msg"></p>
+
+    <a class="register-link" href="login.html">이미 계정이 있으신가요? 로그인 →</a>
+
+  </div>
+</section>
+
+<script type="module" src="js/register.js"></script>
+
+</body>
+</html>

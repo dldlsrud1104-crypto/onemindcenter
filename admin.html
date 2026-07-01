@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원마인드 관리자센터</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<section class="admin-page">
+
+  <aside class="admin-sidebar">
+    <img src="./images/logo.png" class="admin-logo" alt="원마인드 로고">
+
+    <button class="side-btn active" data-tab="dashboard">대시보드</button>
+    <button class="side-btn" data-tab="riders">기사관리</button>
+    <button class="side-btn" data-tab="settlements">정산관리</button>
+    <button class="side-btn" data-tab="excel">엑셀 업로드</button>
+    <button class="side-btn" data-tab="notices">공지관리</button>
+    <button class="side-btn" data-tab="promotions">프로모션</button>
+    <button class="side-btn" data-tab="qna">문의관리</button>
+  </aside>
+
+  <main class="admin-main">
+
+    <header class="admin-top">
+      <div>
+        <p>ONE MIND ADMIN SYSTEM</p>
+        <h1>관리자센터</h1>
+      </div>
+      <button id="adminLogoutBtn">로그아웃</button>
+    </header>
+
+    <section class="admin-tab active" id="dashboard">
+      <div class="admin-stats">
+        <div class="stat-box">
+          <p>승인대기</p>
+          <h2 id="pendingCount">0</h2>
+        </div>
+        <div class="stat-box">
+          <p>승인기사</p>
+          <h2 id="approvedCount">0</h2>
+        </div>
+        <div class="stat-box">
+          <p>전체기사</p>
+          <h2 id="totalCount">0</h2>
+        </div>
+        <div class="stat-box">
+          <p>익일정산</p>
+          <h2 id="nextDayCount">0</h2>
+        </div>
+      </div>
+
+      <div class="admin-panel">
+        <h2>최근 가입 기사</h2>
+        <div id="recentRiders">불러오는 중...</div>
+      </div>
+
+      <div class="admin-panel">
+        <h2>전체 기사 목록</h2>
+        <div id="dashboardRiderList">불러오는 중...</div>
+      </div>
+    </section>
+
+    <section class="admin-tab" id="riders">
+      <div class="admin-panel">
+        <h2>기사관리</h2>
+        <input id="riderSearch" class="admin-input" placeholder="기사 이름 또는 아이디 검색">
+        <div id="riderList">불러오는 중...</div>
+      </div>
+    </section>
+
+<section class="admin-tab" id="settlements">
+  <div class="admin-panel">
+    <h2>정산관리</h2>
+
+    <input id="settlementFilterDate" class="admin-input" type="date">
+
+    <select id="settlementFilterType" class="admin-input">
+      <option value="nextDay">익일정산</option>
+      <option value="weekly">주정산</option>
+    </select>
+
+    <input id="settlementSearch" class="admin-input" placeholder="기사 이름 검색">
+
+    <div id="settlementSummary" class="settlement-summary">
+      불러오는 중...
+    </div>
+
+    <div id="settlementList">
+      불러오는 중...
+    </div>
+  </div>
+</section>
+
+  <section class="admin-tab" id="excel">
+  <div class="admin-panel">
+    <h2>엑셀 업로드</h2>
+
+    <p style="color:#aaa;">쿠팡 익일 정산 엑셀</p>
+    <input id="dailyExcelWorkDate" class="admin-input" type="date">
+    <input id="dailyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
+    <button id="dailyExcelBtn" class="admin-red-btn">익일 엑셀 업로드</button>
+
+    <hr style="border:1px solid #222; margin:25px 0;">
+
+    <p style="color:#aaa;">쿠팡 주정산 엑셀</p>
+    <input id="weeklyExcelWorkDate" class="admin-input" type="date">
+    <input id="weeklyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
+    <button id="weeklyExcelBtn" class="admin-red-btn">주정산 엑셀 업로드</button>
+
+    <div id="excelMsg" style="margin-top:15px;"></div>
+  </div>
+</section>
+
+    <section class="admin-tab" id="notices">
+      <div class="admin-panel">
+        <h2>공지관리</h2>
+        <input id="noticeTitle" class="admin-input" placeholder="공지 제목">
+        <textarea id="noticeContent" class="admin-input" placeholder="공지 내용"></textarea>
+        <button id="saveNoticeBtn" class="admin-red-btn">공지 등록</button>
+        <div id="noticeAdminList"></div>
+      </div>
+    </section>
+
+    <section class="admin-tab" id="promotions">
+      <div class="admin-panel">
+        <h2>프로모션 관리</h2>
+        <input id="promoTitle" class="admin-input" placeholder="프로모션 제목">
+        <textarea id="promoContent" class="admin-input" placeholder="프로모션 내용"></textarea>
+        <button id="savePromoBtn" class="admin-red-btn">프로모션 등록</button>
+        <div id="promoAdminList"></div>
+      </div>
+    </section>
+
+    <section class="admin-tab" id="qna">
+      <div class="admin-panel">
+        <h2>문의관리</h2>
+        <div id="qnaList">준비중입니다.</div>
+      </div>
+    </section>
+
+  </main>
+<div id="riderEditModal" class="modal">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <img src="./images/logo.png" class="modal-logo" alt="원마인드 로고">
+      <h2 id="riderEditTitle">기사 정보 수정</h2>
+    </div>
+
+    <div class="modal-body">
+      <input id="editRiderName" class="admin-input" placeholder="이름">
+      <input id="editRiderPhone" class="admin-input" placeholder="연락처">
+      <input id="editRiderBank" class="admin-input" placeholder="은행">
+      <input id="editRiderAccount" class="admin-input" placeholder="계좌번호">
+      <input id="editRiderOwner" class="admin-input" placeholder="예금주">
+
+      <select id="editRiderSettlementType" class="admin-input">
+        <option value="nextDay">익일정산</option>
+        <option value="weekly">주정산</option>
+      </select>
+
+      <button id="saveRiderEditBtn" class="admin-red-btn">저장하기</button>
+      <button id="closeRiderEditBtn" class="admin-gray-btn">닫기</button>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script type="module" src="js/admin.js"></script>
+<script type="module" src="js/excel.js"></script>
+
+</body>
+</html>

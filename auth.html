@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원마인드 로그인 / 회원가입</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<section class="login-page">
+  <div class="login-box register-box">
+
+    <img src="./images/logo.png" class="login-logo" alt="원마인드 로고">
+
+    <h2 id="formTitle">기사 로그인</h2>
+
+    <div id="loginForm">
+      <input id="loginId" placeholder="아이디">
+      <input id="loginPw" type="password" placeholder="비밀번호">
+      <button id="loginBtn">로그인</button>
+      <p id="loginMsg"></p>
+      <a class="register-link" id="showRegister">아직 회원이 아니신가요? 회원가입 →</a>
+    </div>
+
+    <div id="registerForm" style="display:none;">
+      <input id="name" placeholder="이름">
+      <input id="phone" placeholder="연락처">
+      <input id="regId" placeholder="아이디">
+      <input id="regPw" type="password" placeholder="비밀번호">
+      <input id="regPw2" type="password" placeholder="비밀번호 확인">
+
+      <select id="settlementType">
+        <option value="weekly">주정산</option>
+        <option value="nextDay">익일정산</option>
+      </select>
+
+      <select id="bank">
+        <option value="">은행 선택</option>
+        <option>국민은행</option>
+        <option>신한은행</option>
+        <option>우리은행</option>
+        <option>하나은행</option>
+        <option>농협</option>
+        <option>기업은행</option>
+        <option>카카오뱅크</option>
+        <option>토스뱅크</option>
+      </select>
+
+      <input id="account" placeholder="계좌번호">
+      <input id="owner" placeholder="예금주">
+      <input id="recommender" placeholder="추천인(선택)">
+
+      <label class="agree">
+        <input type="checkbox" id="agree">
+        개인정보 이용에 동의합니다
+      </label>
+
+      <button id="signupBtn">회원가입</button>
+      <p id="signupMsg"></p>
+      <a class="register-link" id="showLogin">이미 계정이 있으신가요? 로그인 →</a>
+    </div>
+
+  </div>
+</section>
+
+<script type="module" src="js/auth.js"></script>
+
+</body>
+</html>
