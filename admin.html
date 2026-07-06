@@ -98,25 +98,33 @@
       </div>
     </section>
 
-    <section class="admin-tab" id="notices">
-      <div class="admin-panel">
-        <h2>공지관리</h2>
-        <input id="noticeTitle" class="admin-input" placeholder="공지 제목">
-        <textarea id="noticeContent" class="admin-input" placeholder="공지 내용"></textarea>
-        <button id="saveNoticeBtn" class="admin-red-btn">공지 등록</button>
-        <div id="noticeAdminList"></div>
-      </div>
-    </section>
+  <section class="admin-tab" id="notices">
+  <div class="admin-panel">
+    <h2>공지관리</h2>
 
-    <section class="admin-tab" id="promotions">
-      <div class="admin-panel">
-        <h2>프로모션 관리</h2>
-        <input id="promoTitle" class="admin-input" placeholder="프로모션 제목">
-        <textarea id="promoContent" class="admin-input" placeholder="프로모션 내용"></textarea>
-        <button id="savePromoBtn" class="admin-red-btn">프로모션 등록</button>
-        <div id="promoAdminList"></div>
-      </div>
-    </section>
+    <input id="noticeTitle" class="admin-input" placeholder="공지 제목">
+    <textarea id="noticeContent" class="admin-input" placeholder="공지 내용"></textarea>
+    <input id="noticeImage" class="admin-input" type="file" accept="image/*">
+
+    <button id="saveNoticeBtn" class="admin-red-btn">공지 등록</button>
+
+    <div id="noticeAdminList"></div>
+  </div>
+</section>
+
+<section class="admin-tab" id="promotions">
+  <div class="admin-panel">
+    <h2>프로모션 관리</h2>
+
+    <input id="promoTitle" class="admin-input" placeholder="프로모션 제목">
+    <textarea id="promoContent" class="admin-input" placeholder="프로모션 내용"></textarea>
+    <input id="promoImage" class="admin-input" type="file" accept="image/*">
+
+    <button id="savePromoBtn" class="admin-red-btn">프로모션 등록</button>
+
+    <div id="promoAdminList"></div>
+  </div>
+</section>
 
     <section class="admin-tab" id="qna">
       <div class="admin-panel">

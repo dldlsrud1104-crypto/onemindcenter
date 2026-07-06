@@ -379,6 +379,13 @@ if (promoList) {
 
       div.innerHTML = `
         <strong>🎁 ${promo.title || "-"}</strong>
+
+        ${
+          promo.imageUrl
+            ? `<img src="${promo.imageUrl}" class="post-image">`
+            : ""
+        }
+
         <div class="list-sub">
           ${formatDateTime(promo.createdAt)}<br>
           ${(promo.content || "").slice(0, 50)}
@@ -462,8 +469,17 @@ function openPromoModal(promo) {
     <table class="modal-table">
       <tr><td>제목</td><td>${promo.title || "-"}</td></tr>
       <tr><td>등록일</td><td>${formatDateTime(promo.createdAt)}</td></tr>
-      <tr><td>내용</td><td>${(promo.content || "").replace(/\n/g, "<br>")}</td></tr>
     </table>
+
+    ${
+      promo.imageUrl
+        ? `<img src="${promo.imageUrl}" class="post-image">`
+        : ""
+    }
+
+    <div class="modal-content-text">
+      ${(promo.content || "").replace(/\n/g, "<br>")}
+    </div>
   `;
 
   modal.style.display = "block";

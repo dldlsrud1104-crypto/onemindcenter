@@ -1318,3 +1318,18 @@ width:calc(100% - 36px);
     margin:18px 0;
     text-align:center;
 }
+.post-image{
+  width:100%;
+  max-height:320px;
+  object-fit:cover;
+  border-radius:14px;
+  margin:12px 0;
+  border:1px solid #2a2a2a;
+}
+
+.modal-content-text{
+  color:#111827;
+  line-height:1.8;
+  font-weight:700;
+  padding:12px 4px;
+}

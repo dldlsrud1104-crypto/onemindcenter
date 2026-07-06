@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase.js";
+import { auth, db, storage } from "./firebase.js";
 
 import {
   onAuthStateChanged,
@@ -15,6 +15,11 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 /* =========================
    기본 요소
 ========================= */
@@ -64,11 +69,23 @@ const noticeTitle = document.getElementById("noticeTitle");
 const noticeContent = document.getElementById("noticeContent");
 const noticeAdminList = document.getElementById("noticeAdminList");
 
+const noticeImage = document.getElementById("noticeImage");
+const promoImage = document.getElementById("promoImage");
 let editingRiderUid = null;
 let editingSettlement = null;
 
 let allRiders = [];
 let allSettlements = [];
+async function uploadImage(file, folder) {
+  if (!file) return "";
+
+  const fileName = `${Date.now()}_${file.name}`;
+  const fileRef = ref(storage, `${folder}/${fileName}`);
+
+  await uploadBytes(fileRef, file);
+
+  return await getDownloadURL(fileRef);
+}
 
 /* =========================
    로그인 확인 / 로그아웃
@@ -652,14 +669,27 @@ if (saveNoticeBtn) {
       return;
     }
 
+    let imageUrl = "";
+
+try {
+  if (noticeImage && noticeImage.files.length > 0) {
+    imageUrl = await uploadImage(noticeImage.files[0], "notice");
+  }
+} catch (error) {
+  console.error(error);
+  alert("사진 업로드 실패: " + error.code);
+  return;
+}
     await addDoc(collection(db, "notice"), {
       title,
       content,
+      imageUrl,
       createdAt: serverTimestamp()
     });
 
     noticeTitle.value = "";
     noticeContent.value = "";
+    if (noticeImage) noticeImage.value = "";
 
     alert("공지 등록 완료");
   };
@@ -693,8 +723,16 @@ if (noticeAdminList) {
 
       div.innerHTML = `
         <h3>${notice.title || "-"}</h3>
+
+        ${
+          notice.imageUrl
+            ? `<img src="${notice.imageUrl}" class="post-image">`
+            : ""
+        }
+
         <p style="color:#aaa;">등록일: ${formatDateTime(notice.createdAt)}</p>
         <p>${notice.content || ""}</p>
+
         <button class="delete-btn notice-delete-btn">삭제</button>
       `;
 
@@ -725,14 +763,28 @@ if (savePromoBtn) {
       return;
     }
 
+    let imageUrl = "";
+
+try {
+  if (promoImage && promoImage.files.length > 0) {
+    imageUrl = await uploadImage(promoImage.files[0], "promotions");
+  }
+} catch (error) {
+  console.error(error);
+  alert("사진 업로드 실패: " + error.code);
+  return;
+}
+
     await addDoc(collection(db, "promotions"), {
       title,
       content,
+      imageUrl,
       createdAt: serverTimestamp()
     });
 
     promoTitle.value = "";
     promoContent.value = "";
+    if (promoImage) promoImage.value = "";
 
     alert("프로모션 등록 완료");
   };
@@ -766,8 +818,16 @@ if (promoAdminList) {
 
       div.innerHTML = `
         <h3>${promo.title || "-"}</h3>
+
+        ${
+          promo.imageUrl
+            ? `<img src="${promo.imageUrl}" class="post-image">`
+            : ""
+        }
+
         <p style="color:#aaa;">등록일: ${formatDateTime(promo.createdAt)}</p>
         <p>${promo.content || ""}</p>
+
         <button class="delete-btn promo-delete-btn">삭제</button>
       `;
 
