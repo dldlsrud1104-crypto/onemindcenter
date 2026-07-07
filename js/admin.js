@@ -522,7 +522,7 @@ function openSettlementViewModal(item) {
       <tr><td>미션비</td><td>${Number(item.missionPay || 0).toLocaleString()}원</td></tr>
       <tr><td>프로모션</td><td>${Number(item.promotionPay || 0).toLocaleString()}원</td></tr>
 <tr><td>원천세</td><td>${minusMoney(item.taxPay)}</td></tr>
-<tr><td>이체수수료</td><td>${minusMoney(item.transferFee || 300)}</td></tr>
+<tr><td>이체수수료</td><td>${minusMoney(item.transferFee ?? 300)}</td></tr>
       <tr><td>오배송 내역</td><td>${item.wrongDeliveryMemo || "-"}</td></tr>
     </table>
 
@@ -887,51 +887,52 @@ function minusMoney(value) {
   return "-" + Math.abs(Number(value || 0)).toLocaleString() + "원";
 }
 if (excelHistoryList) {
-
-  onSnapshot(collection(db, "uploadHistory"), async (snapshot) => {
-
+  onSnapshot(collection(db, "settlements"), (snapshot) => {
     excelHistoryList.innerHTML = "";
 
     if (snapshot.empty) {
-      excelHistoryList.innerHTML = "업로드 내역이 없습니다.";
+      excelHistoryList.innerHTML = "업로드된 정산 내역이 없습니다.";
       return;
     }
 
-    const list = [];
+    const grouped = {};
 
     snapshot.forEach((docSnap) => {
-      list.push({
-        id: docSnap.id,
-        ...docSnap.data()
-      });
+      const item = docSnap.data();
+      const key = `${item.workDate}_${item.settlementType}`;
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          workDate: item.workDate,
+          settlementType: item.settlementType,
+          count: 0
+        };
+      }
+
+      grouped[key].count++;
     });
 
-    list.sort((a, b) =>
-      (b.uploadedAt?.seconds || 0) - (a.uploadedAt?.seconds || 0)
-    );
+    const list = Object.values(grouped).sort((a, b) => {
+      return (b.workDate || "").localeCompare(a.workDate || "");
+    });
 
     list.forEach((item) => {
-
       const card = document.createElement("div");
       card.className = "admin-card";
 
       card.innerHTML = `
         <h3>${item.settlementType === "weekly" ? "주정산" : "익일정산"}</h3>
-
         <p>운행일 : ${item.workDate}</p>
-
-        <p>등록 기사 : ${item.uploadCount}명</p>
-
-        <p>업로드 : ${formatDateTime(item.uploadedAt)}</p>
-
+        <p>등록 기사 : ${item.count}명</p>
         <button class="delete-btn">삭제</button>
       `;
 
       card.querySelector("button").onclick = async () => {
+        const typeText = item.settlementType === "weekly" ? "주정산" : "익일정산";
 
         const ok = confirm(
-`${item.workDate} ${item.settlementType === "weekly" ? "주정산" : "익일정산"}을 삭제하시겠습니까?`
-);
+          `${item.workDate} ${typeText} 정산 ${item.count}건을 삭제할까요?`
+        );
 
         if (!ok) return;
 
@@ -947,15 +948,10 @@ if (excelHistoryList) {
           await deleteDoc(doc(db, "settlements", docSnap.id));
         }
 
-        await deleteDoc(doc(db, "uploadHistory", item.id));
-
         alert("삭제 완료");
       };
 
       excelHistoryList.appendChild(card);
-
     });
-
   });
-
 }

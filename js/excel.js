@@ -85,6 +85,7 @@ async function handleExcelUpload(type) {
 
       const deductPay = 0;
       const feePay = 0;
+      const transferFee = 300;
       const missionPay = 0;
       const promotionPay = 0;
 
@@ -132,6 +133,7 @@ if (type === "nextDay") {
     - Math.abs(employmentPay)
     + missionPay
     + promotionPay
+    - transferFee
     - taxPay;
 } else {
   totalPay =
@@ -141,6 +143,7 @@ if (type === "nextDay") {
     - Math.abs(employmentPay)
     + missionPay
     + promotionPay
+    - transferFee
     - taxPay;
 }
       const payDate = getNextDate(workDate);
@@ -164,6 +167,7 @@ if (type === "nextDay") {
         taxPay,
         missionPay,
         promotionPay,
+        transferFee,
         totalPay,
 
         wrongDeliveryCount: 0,
@@ -177,15 +181,15 @@ if (type === "nextDay") {
       success++;
     }
 
-    if (success > 0) {
-      await addDoc(collection(db, "uploadHistory"), {
-        workDate,
-        settlementType: type,
-        uploadCount: success,
-        failCount: fail,
-        uploadedAt: serverTimestamp()
-      });
-    }
+if (success > 0) {
+  await addDoc(collection(db, "uploadHistory"), {
+    workDate,
+    settlementType: type,
+    uploadCount: success,
+    failCount: fail,
+    uploadedAt: serverTimestamp()
+  });
+}
 
     excelMsg.innerHTML = `
       업로드 완료<br>

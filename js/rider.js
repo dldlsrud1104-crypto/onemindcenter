@@ -186,10 +186,16 @@ function renderDateFilter() {
   settlementDateFilter.innerHTML = `<option value="all">전체 날짜</option>`;
 
   dates.forEach((date) => {
-    settlementDateFilter.innerHTML += `
-      <option value="${date}">${date}</option>
-    `;
-  });
+  const types = mySettlements
+    .filter((s) => s.workDate === date)
+    .map((s) => s.settlementType === "nextDay" ? "익일정산" : "주정산");
+
+  const typeText = [...new Set(types)].join(" / ");
+
+  settlementDateFilter.innerHTML += `
+    <option value="${date}">${date} (${typeText})</option>
+  `;
+});
 
   settlementDateFilter.value = dates.includes(currentValue)
     ? currentValue
@@ -333,9 +339,9 @@ function openSettlementModal(item) {
           <b>-${Math.abs(Number(item.taxPay || 0)).toLocaleString()}원</b>
         </div>
       </div>
-      <div class="receipt-row minus">
+<div class="receipt-row minus">
   <span>이체수수료</span>
-  <b>-${Math.abs(Number(item.transferFee || 300)).toLocaleString()}원</b>
+  <b>-${Math.abs(Number(item.transferFee ?? 300)).toLocaleString()}원</b>
 </div>
 
       <div class="receipt-total">
