@@ -49,3 +49,16 @@ if (publicPromoList) {
     });
   });
 }
+const openPublicPromoBtn = document.getElementById("openPublicPromoBtn");
+
+if (openPublicPromoBtn && publicPromoList) {
+  openPublicPromoBtn.onclick = () => {
+    if (publicPromoList.style.display === "none") {
+      publicPromoList.style.display = "block";
+      openPublicPromoBtn.innerText = "원마인드 프로모션 닫기";
+    } else {
+      publicPromoList.style.display = "none";
+      openPublicPromoBtn.innerText = "원마인드 프로모션 보기";
+    }
+  };
+}
