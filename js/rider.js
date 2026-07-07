@@ -85,9 +85,12 @@ currentUid = user.uid;
   renderProfile();
 
   if (riderName) {
-    riderName.innerText = `${currentRider.name || ""} 기사님 👋`;
-  }
+  const displayName = String(currentRider.name || "")
+    .replace(/[0-9]/g, "")
+    .trim();
 
+  riderName.innerText = `${displayName || "기사"} 기사님 👋`;
+}
   if (settlementTypeText) {
     settlementTypeText.innerText =
       currentRider.settlementType === "nextDay"
@@ -165,15 +168,20 @@ function renderSettlementList(settlements) {
     (b.workDate || "").localeCompare(a.workDate || "")
   );
 
-  renderDateFilter(mySettlements);
+  renderDateFilter();
   renderFilteredSettlements();
 }
 
-function renderDateFilter(settlements) {
+function renderDateFilter() {
   if (!settlementDateFilter) return;
 
   const currentValue = settlementDateFilter.value || "all";
-  const dates = [...new Set(settlements.map((s) => s.workDate).filter(Boolean))];
+
+  const dates = [...new Set(
+    mySettlements
+      .map((s) => s.workDate)
+      .filter(Boolean)
+  )];
 
   settlementDateFilter.innerHTML = `<option value="all">전체 날짜</option>`;
 
@@ -183,7 +191,9 @@ function renderDateFilter(settlements) {
     `;
   });
 
-  settlementDateFilter.value = dates.includes(currentValue) ? currentValue : "all";
+  settlementDateFilter.value = dates.includes(currentValue)
+    ? currentValue
+    : "all";
 }
 
 function renderFilteredSettlements() {
@@ -221,6 +231,7 @@ function renderFilteredSettlements() {
       </div>
 
       <div class="settlement-card-info">
+        정산방식 ${item.settlementType === "nextDay" ? "익일정산" : "주정산"}<br>
         지급일 ${item.payDate || "-"}<br>
         배송 ${Number(item.deliveryCount || 0).toLocaleString()}건
         ${
@@ -253,41 +264,93 @@ function openSettlementModal(item) {
     modalTitle.innerText = "원마인드 정산서";
   }
 
+  const typeText = item.settlementType === "nextDay" ? "익일정산" : "주정산";
+
   modalBody.innerHTML = `
-    <table class="modal-table">
-      <tr><td>기사명</td><td>${currentRider?.name || "-"}</td></tr>
-<tr><td>운행일</td><td>${item.workDate || "-"}</td></tr>
-<tr><td>지급일</td><td>${item.payDate || "-"}</td></tr>
-<tr><td>배송건수</td><td>${Number(item.deliveryCount || 0).toLocaleString()}건</td></tr>
-<tr><td>오배송</td><td>${Number(item.wrongDeliveryCount || 0).toLocaleString()}건</td></tr>
-<tr><td>오배송 차감금액</td><td>-${Number(item.wrongDeliveryPay || 0).toLocaleString()}원</td></tr>
-<tr><td>쿠팡 지급액</td><td>${Number(item.coupangPay || 0).toLocaleString()}원</td></tr>
+    <div class="settlement-receipt">
 
+      <div class="receipt-head">
+        <h2>${item.name || "-"} 기사님</h2>
+        <p>${typeText} · ${item.workDate || "-"}</p>
+        <p>지급일 ${item.payDate || "-"}</p>
+      </div>
 
+      <div class="receipt-section">
+        <h3>오배송 내역</h3>
 
-<tr><td>산재</td><td>-${Number(item.industrialPay || 0).toLocaleString()}원</td></tr>
-<tr><td>고용</td><td>-${Number(item.employmentPay || 0).toLocaleString()}원</td></tr>
-<tr><td>원천세</td><td>-${Number(item.taxPay || 0).toLocaleString()}원</td></tr>
+        <div class="receipt-row">
+          <span>오배송 건수</span>
+          <b>${Number(item.wrongDeliveryCount || 0).toLocaleString()}건</b>
+        </div>
 
-<tr><td>미션비</td><td>${Number(item.missionPay || 0).toLocaleString()}원</td></tr>
-<tr><td>프로모션</td><td>${Number(item.promotionPay || 0).toLocaleString()}원</td></tr>
+        <div class="receipt-row minus">
+          <span>오배송 차감</span>
+          <b>-${Math.abs(Number(item.wrongDeliveryPay || 0)).toLocaleString()}원</b>
+        </div>
 
-<tr><td>오배송 내역</td><td>${item.wrongDeliveryMemo || "-"}</td></tr>
-    </table>
+        ${
+          item.wrongDeliveryMemo
+            ? `<div class="receipt-memo">${item.wrongDeliveryMemo.replace(/\n/g, "<br>")}</div>`
+            : ""
+        }
+      </div>
 
-    <div class="modal-total">
-      최종 지급액<br>
-      ${Number(item.totalPay || 0).toLocaleString()}원
-    </div>
+      <div class="receipt-section">
+        <h3>정산내역</h3>
 
-    <div class="modal-status">
-      ${item.status === "paid" ? "🟢 입금완료" : "🟡 입금대기"}
+        <div class="receipt-row">
+          <span>쿠팡 정산금</span>
+          <b>${Number(item.coupangPay || 0).toLocaleString()}원</b>
+        </div>
+
+        <div class="receipt-row minus">
+          <span>수수료</span>
+          <b>-${Math.abs(Number(item.feePay || 0)).toLocaleString()}원</b>
+        </div>
+
+        <div class="receipt-row minus">
+          <span>산재보험</span>
+          <b>-${Math.abs(Number(item.industrialPay || 0)).toLocaleString()}원</b>
+        </div>
+
+        <div class="receipt-row minus">
+          <span>고용보험</span>
+          <b>-${Math.abs(Number(item.employmentPay || 0)).toLocaleString()}원</b>
+        </div>
+
+        <div class="receipt-row plus">
+          <span>미션비</span>
+          <b>+${Number(item.missionPay || 0).toLocaleString()}원</b>
+        </div>
+
+        <div class="receipt-row plus">
+          <span>프로모션</span>
+          <b>+${Number(item.promotionPay || 0).toLocaleString()}원</b>
+        </div>
+
+        <div class="receipt-row minus">
+          <span>원천세</span>
+          <b>-${Math.abs(Number(item.taxPay || 0)).toLocaleString()}원</b>
+        </div>
+      </div>
+      <div class="receipt-row minus">
+  <span>이체수수료</span>
+  <b>-${Math.abs(Number(item.transferFee || 300)).toLocaleString()}원</b>
+</div>
+
+      <div class="receipt-total">
+        <p>최종 지급액</p>
+        <h1>${Number(item.totalPay || 0).toLocaleString()}원</h1>
+        <span class="${item.status === "paid" ? "paid-badge" : "wait-badge"}">
+          ${item.status === "paid" ? "입금완료" : "입금대기"}
+        </span>
+      </div>
+
     </div>
   `;
 
   modal.style.display = "block";
 }
-
 /* 공지사항 */
 if (noticeBox) {
   onSnapshot(collection(db, "notice"), (snapshot) => {
@@ -314,8 +377,7 @@ if (noticeBox) {
     notices.forEach((notice) => {
       const div = document.createElement("div");
       div.className = "list-item notice-item";
-
-      div.innerHTML = `
+     div.innerHTML = `
         <strong>📢 ${notice.title || "-"}</strong>
         <div class="list-sub">
           ${formatDateTime(notice.createdAt)}<br>
@@ -331,6 +393,7 @@ if (noticeBox) {
     });
   });
 }
+
 
 function openNoticeModal(notice) {
   if (!modal || !modalBody) return;
@@ -349,6 +412,7 @@ function openNoticeModal(notice) {
 
   modal.style.display = "block";
 }
+
 
 /* 프로모션 */
 if (promoList) {

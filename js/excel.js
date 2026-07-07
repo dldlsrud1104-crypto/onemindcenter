@@ -26,13 +26,15 @@ if (weeklyExcelBtn) {
 }
 
 async function handleExcelUpload(type) {
-  const fileInput = type === "nextDay"
-    ? document.getElementById("dailyExcelFile")
-    : document.getElementById("weeklyExcelFile");
+  const fileInput =
+    type === "nextDay"
+      ? document.getElementById("dailyExcelFile")
+      : document.getElementById("weeklyExcelFile");
 
-  const workDate = type === "nextDay"
-    ? document.getElementById("dailyExcelWorkDate").value
-    : document.getElementById("weeklyExcelWorkDate").value;
+  const workDate =
+    type === "nextDay"
+      ? document.getElementById("dailyExcelWorkDate").value
+      : document.getElementById("weeklyExcelWorkDate").value;
 
   const file = fileInput.files[0];
 
@@ -40,28 +42,14 @@ async function handleExcelUpload(type) {
     alert("날짜와 엑셀 파일을 선택해주세요.");
     return;
   }
-  const existsQuery = query(
-  collection(db, "settlements"),
-  where("workDate", "==", workDate),
-  where("settlementType", "==", type)
-);
 
-const existsSnap = await getDocs(existsQuery);
-
-if (!existsSnap.empty) {
-  const ok = confirm(
-    `${workDate} ${type === "nextDay" ? "익일정산" : "주정산"}이 이미 등록되어 있습니다.\n\n기존 정산은 유지하고, 중복된 기사만 건너뛰며 업로드할까요?`
-  );
-
-  if (!ok) return;
-}
-
-  excelMsg.innerText = type === "nextDay"
-    ? "익일 엑셀 업로드 중..."
-    : "주정산 엑셀 업로드 중...";
+  excelMsg.innerText =
+    type === "nextDay"
+      ? "익일 엑셀 업로드 중..."
+      : "주정산 엑셀 업로드 중...";
 
   try {
-    const rows = await readDailyExcel(file);
+    const rows = await readExcel(file);
     const riders = await getRiders();
 
     let success = 0;
@@ -95,9 +83,13 @@ if (!existsSnap.empty) {
         continue;
       }
 
+      const deductPay = 0;
+      const feePay = 0;
+      const missionPay = 0;
+      const promotionPay = 0;
+
       let industrialPay = 0;
       let employmentPay = 0;
-      const taxPay = Math.round(coupangPay * TAX_RATE);
 
       if (type === "nextDay") {
         industrialPay = Math.round(coupangPay * INDUSTRIAL_RATE);
@@ -109,30 +101,48 @@ if (!existsSnap.empty) {
         employmentPay = Number(cleanNumber(row.employmentPay));
       }
 
-      const deductPay = 0;
-      const missionPay = 0;
-      const promotionPay = 0;
+  
+let taxPay = 0;
 
-      let totalPay = 0;
+if (type === "nextDay") {
 
-      if (type === "nextDay") {
-        totalPay =
-          coupangPay
-          - deductPay
-          - industrialPay
-          - employmentPay
-          - taxPay
-          + missionPay
-          + promotionPay;
-      } else {
-        totalPay =
-          coupangPay
-          - deductPay
-          - taxPay
-          + missionPay
-          + promotionPay;
-      }
+  taxPay = Math.round(coupangPay * TAX_RATE);
 
+} else {
+
+  taxPay = Math.round(
+    (
+      coupangPay
+      - Math.abs(industrialPay)
+      - Math.abs(employmentPay)
+      + missionPay
+      + promotionPay
+    ) * TAX_RATE
+  );
+
+}
+let totalPay = 0;
+
+if (type === "nextDay") {
+  totalPay =
+    coupangPay
+    - deductPay
+    - feePay
+    - Math.abs(industrialPay)
+    - Math.abs(employmentPay)
+    + missionPay
+    + promotionPay
+    - taxPay;
+} else {
+  totalPay =
+    coupangPay
+    - feePay
+    - Math.abs(industrialPay)
+    - Math.abs(employmentPay)
+    + missionPay
+    + promotionPay
+    - taxPay;
+}
       const payDate = getNextDate(workDate);
 
       await addDoc(collection(db, "settlements"), {
@@ -148,6 +158,7 @@ if (!existsSnap.empty) {
 
         coupangPay,
         deductPay,
+        feePay,
         industrialPay,
         employmentPay,
         taxPay,
@@ -155,11 +166,25 @@ if (!existsSnap.empty) {
         promotionPay,
         totalPay,
 
+        wrongDeliveryCount: 0,
+        wrongDeliveryPay: 0,
+        wrongDeliveryMemo: "",
+
         status: "pending",
         createdAt: serverTimestamp()
       });
 
       success++;
+    }
+
+    if (success > 0) {
+      await addDoc(collection(db, "uploadHistory"), {
+        workDate,
+        settlementType: type,
+        uploadCount: success,
+        failCount: fail,
+        uploadedAt: serverTimestamp()
+      });
     }
 
     excelMsg.innerHTML = `
@@ -177,7 +202,7 @@ if (!existsSnap.empty) {
   }
 }
 
-function readDailyExcel(file) {
+function readExcel(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -207,13 +232,14 @@ function readDailyExcel(file) {
           .map((row) => ({
             name: row[2] || "",
             deliveryCount: row[5] || "",
-            coupangPay: row[35] || "",
-            industrialPay: row[0] || "",
-            employmentPay: row[0] || ""
+
+            // 주정산 기준
+            // AE = 산재, AG = 고용, AK = 쿠팡 지급액
+            industrialPay: row[30] || "",
+            employmentPay: row[32] || "",
+            coupangPay: row[28] || ""
           }))
           .filter((row) => row.name && row.coupangPay);
-
-        console.log("정리된 엑셀 데이터:", rows);
 
         resolve(rows);
       } catch (error) {

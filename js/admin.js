@@ -12,7 +12,10 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  getDocs,
+query,
+where
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 import {
@@ -23,7 +26,7 @@ import {
 /* =========================
    기본 요소
 ========================= */
-
+const excelHistoryList = document.getElementById("excelHistoryList");
 const riderList = document.getElementById("riderList");
 const recentRiders = document.getElementById("recentRiders");
 const dashboardRiderList = document.getElementById("dashboardRiderList");
@@ -508,17 +511,18 @@ function openSettlementViewModal(item) {
 
       <tr><td>배송건수</td><td>${Number(item.deliveryCount || 0).toLocaleString()}건</td></tr>
       <tr><td>오배송</td><td>${Number(item.wrongDeliveryCount || 0).toLocaleString()}건</td></tr>
-      <tr><td>오배송 차감금액</td><td>-${Number(item.wrongDeliveryPay || 0).toLocaleString()}원</td></tr>
+      <tr><td>오배송 차감금액</td><td>${minusMoney(item.wrongDeliveryPay)}</td></tr>
 
       <tr><td>쿠팡 지급액</td><td>${Number(item.coupangPay || 0).toLocaleString()}원</td></tr>
-      <tr><td>수수료</td><td>-${Number(item.feePay || 0).toLocaleString()}원</td></tr>
-      <tr><td>산재</td><td>-${Number(item.industrialPay || 0).toLocaleString()}원</td></tr>
-      <tr><td>고용</td><td>-${Number(item.employmentPay || 0).toLocaleString()}원</td></tr>
-      <tr><td>원천세</td><td>-${Number(item.taxPay || 0).toLocaleString()}원</td></tr>
+      <tr><td>수수료</td><td>${minusMoney(item.feePay)}</td></tr>
+<tr><td>산재</td><td>${minusMoney(item.industrialPay)}</td></tr>
+<tr><td>고용</td><td>${minusMoney(item.employmentPay)}</td></tr>
+
 
       <tr><td>미션비</td><td>${Number(item.missionPay || 0).toLocaleString()}원</td></tr>
       <tr><td>프로모션</td><td>${Number(item.promotionPay || 0).toLocaleString()}원</td></tr>
-
+<tr><td>원천세</td><td>${minusMoney(item.taxPay)}</td></tr>
+<tr><td>이체수수료</td><td>${minusMoney(item.transferFee || 300)}</td></tr>
       <tr><td>오배송 내역</td><td>${item.wrongDeliveryMemo || "-"}</td></tr>
     </table>
 
@@ -567,24 +571,33 @@ function openSettlementEditModal(item) {
 }
 
 function updateSettlementEditPreview() {
-  if (!editingSettlement) return 0;
+  if (!editingSettlement) return { totalPay: 0, taxPay: 0 };
 
   const coupangPay = Number(editingSettlement.coupangPay || 0);
   const feePay = Number(document.getElementById("editFeePay").value || 0);
-  const industrialPay = Number(editingSettlement.industrialPay || 0);
-  const employmentPay = Number(editingSettlement.employmentPay || 0);
-  const taxPay = Number(editingSettlement.taxPay || 0);
+  const industrialPay = Math.abs(Number(editingSettlement.industrialPay || 0));
+  const employmentPay = Math.abs(Number(editingSettlement.employmentPay || 0));
   const missionPay = Number(document.getElementById("editMissionPay").value || 0);
   const promotionPay = Number(document.getElementById("editPromotionPay").value || 0);
 
+  // 이체수수료 고정값 설정
+  const transferFee = 300;
+
+  // 원천세 계산 (원천세 앞에 const를 붙여 전역 변수 오염을 방지합니다)
+  const lastTaxPay = Math.round(
+    (coupangPay - industrialPay - employmentPay + missionPay + promotionPay) * 0.033
+  );
+
+  // 최종 지급액 계산 (이체수수료 -300원 추가 차감)
   const totalPay =
     coupangPay
     - feePay
     - industrialPay
     - employmentPay
-    - taxPay
+    - lastTaxPay
     + missionPay
-    + promotionPay;
+    + promotionPay
+    - transferFee; // <-- 수수료 300원 차감
 
   const preview = document.getElementById("editTotalPreview");
 
@@ -594,14 +607,16 @@ function updateSettlementEditPreview() {
       수수료: -${feePay.toLocaleString()}원<br>
       산재: -${industrialPay.toLocaleString()}원<br>
       고용: -${employmentPay.toLocaleString()}원<br>
-      원천세: -${taxPay.toLocaleString()}원<br>
       미션비: +${missionPay.toLocaleString()}원<br>
-      프로모션: +${promotionPay.toLocaleString()}원<br><br>
+      프로모션: +${promotionPay.toLocaleString()}원<br>
+      원천세: -${lastTaxPay.toLocaleString()}원<br>
+      이체수수료: -${transferFee.toLocaleString()}원<br><br>
       최종 지급액: <b>${totalPay.toLocaleString()}원</b>
     `;
   }
 
-  return totalPay;
+  // 저장 버튼에서 사용할 수 있도록 변수명을 맞춰서 반환합니다.
+  return { totalPay, taxPay: lastTaxPay };
 }
 
 ["editMissionPay", "editPromotionPay", "editFeePay"].forEach((id) => {
@@ -620,6 +635,7 @@ if (closeSettlementEditBtn) {
 
 if (saveSettlementEditBtn) {
   saveSettlementEditBtn.onclick = async () => {
+    console.log("저장 버튼 클릭");
     if (!editingSettlement) {
       alert("수정할 정산을 찾을 수 없습니다.");
       return;
@@ -634,24 +650,30 @@ if (saveSettlementEditBtn) {
     const wrongDeliveryMemo = document.getElementById("editWrongMemo").value.trim();
     const status = document.getElementById("editSettlementStatus").value;
 
-    const totalPay = updateSettlementEditPreview();
+    // 최신 계산된 totalPay와 taxPay 구조분해할당으로 가져오기
+    const { totalPay, taxPay } = updateSettlementEditPreview();
 
-    await updateDoc(doc(db, "settlements", editingSettlement.id), {
-      deliveryCount,
-      feePay,
-      missionPay,
-      promotionPay,
-      wrongDeliveryCount,
-      wrongDeliveryPay,
-      wrongDeliveryMemo,
-      status,
-      totalPay
-    });
+    try {
+      await updateDoc(doc(db, "settlements", editingSettlement.id), {
+        deliveryCount,
+        feePay,
+        missionPay,
+        promotionPay,
+        wrongDeliveryCount,
+        wrongDeliveryPay,
+        wrongDeliveryMemo,
+        status,
+        taxPay,   // 정상 저장
+        totalPay  // -300원 차감된 금액 정상 저장
+      });
 
-    alert("정산 수정 완료");
-
-    settlementEditModal.style.display = "none";
-    editingSettlement = null;
+      alert("정산 수정 완료");
+      settlementEditModal.style.display = "none";
+      editingSettlement = null;
+    } catch (error) {
+      console.error("정산 수정 중 오류 발생:", error);
+      alert("정산 수정에 실패했습니다.");
+    }
   };
 }
 
@@ -860,4 +882,80 @@ function formatDateTime(timestamp) {
     hour: "2-digit",
     minute: "2-digit"
   });
+}
+function minusMoney(value) {
+  return "-" + Math.abs(Number(value || 0)).toLocaleString() + "원";
+}
+if (excelHistoryList) {
+
+  onSnapshot(collection(db, "uploadHistory"), async (snapshot) => {
+
+    excelHistoryList.innerHTML = "";
+
+    if (snapshot.empty) {
+      excelHistoryList.innerHTML = "업로드 내역이 없습니다.";
+      return;
+    }
+
+    const list = [];
+
+    snapshot.forEach((docSnap) => {
+      list.push({
+        id: docSnap.id,
+        ...docSnap.data()
+      });
+    });
+
+    list.sort((a, b) =>
+      (b.uploadedAt?.seconds || 0) - (a.uploadedAt?.seconds || 0)
+    );
+
+    list.forEach((item) => {
+
+      const card = document.createElement("div");
+      card.className = "admin-card";
+
+      card.innerHTML = `
+        <h3>${item.settlementType === "weekly" ? "주정산" : "익일정산"}</h3>
+
+        <p>운행일 : ${item.workDate}</p>
+
+        <p>등록 기사 : ${item.uploadCount}명</p>
+
+        <p>업로드 : ${formatDateTime(item.uploadedAt)}</p>
+
+        <button class="delete-btn">삭제</button>
+      `;
+
+      card.querySelector("button").onclick = async () => {
+
+        const ok = confirm(
+`${item.workDate} ${item.settlementType === "weekly" ? "주정산" : "익일정산"}을 삭제하시겠습니까?`
+);
+
+        if (!ok) return;
+
+        const q = query(
+          collection(db, "settlements"),
+          where("workDate", "==", item.workDate),
+          where("settlementType", "==", item.settlementType)
+        );
+
+        const snap = await getDocs(q);
+
+        for (const docSnap of snap.docs) {
+          await deleteDoc(doc(db, "settlements", docSnap.id));
+        }
+
+        await deleteDoc(doc(db, "uploadHistory", item.id));
+
+        alert("삭제 완료");
+      };
+
+      excelHistoryList.appendChild(card);
+
+    });
+
+  });
+
 }
