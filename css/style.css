@@ -1515,3 +1515,43 @@ width:calc(100% - 36px);
   font-weight:900;
   margin-bottom:12px;
 }
+.public-promo-box{
+  margin:30px 0;
+  padding:20px;
+  border-radius:20px;
+  background:#111;
+  border:1px solid #2a2a2a;
+}
+
+.public-promo-box h2{
+  color:#fff;
+  font-size:22px;
+  margin-bottom:16px;
+}
+
+.public-promo-card{
+  background:#1a1a1a;
+  border:1px solid #333;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:14px;
+}
+
+.public-promo-card h3{
+  color:#fff;
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+.public-promo-card p{
+  color:#ddd;
+  line-height:1.6;
+}
+
+.public-promo-image{
+  width:100%;
+  height:auto;
+  border-radius:14px;
+  margin:10px 0;
+  display:block;
+}
