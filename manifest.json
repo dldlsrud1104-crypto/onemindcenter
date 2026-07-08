@@ -1,6 +1,6 @@
 {
-  "name": "원마인드 기사센터",
-  "short_name": "원마인드",
+  "name": "원마인드 기사센터 (경기)",
+  "short_name": "원마인드 (경기)",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111111",
