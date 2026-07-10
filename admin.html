@@ -31,7 +31,7 @@ png<!DOCTYPE html>
     <header class="admin-top">
       <div>
         <p>ONE MIND ADMIN SYSTEM</p>
-        <h1>관리자센터 (경기)</h1>
+        <h1>관리자센터 (서울)</h1>
       </div>
       <button id="adminLogoutBtn">로그아웃</button>
     </header>
@@ -93,7 +93,9 @@ png<!DOCTYPE html>
         <hr style="border:1px solid #222; margin:25px 0;">
 
         <p style="color:#aaa;">쿠팡 주정산 엑셀</p>
-        <input id="weeklyExcelWorkDate" class="admin-input" type="date">
+        <select id="weeklyExcelWorkDate" class="admin-input">
+  <option value="">주정산 지급일 선택</option>
+</select>
         <input id="weeklyExcelFile" class="admin-input" type="file" accept=".xlsx,.xls">
         <button id="weeklyExcelBtn" class="admin-red-btn">주정산 엑셀 업로드</button>
 

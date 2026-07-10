@@ -506,8 +506,30 @@ function openSettlementViewModal(item) {
   settlementViewBody.innerHTML = `
     <table class="modal-table">
       <tr><td>기사명</td><td>${item.name || "-"}</td></tr>
-      <tr><td>운행일</td><td>${item.workDate || "-"}</td></tr>
-      <tr><td>지급일</td><td>${item.payDate || "-"}</td></tr>
+      
+      ${
+  item.settlementType === "weekly"
+    ? `
+      <tr>
+        <td>운행기간</td>
+        <td>${item.periodStart || "-"} ~ ${item.periodEnd || "-"}</td>
+      </tr>
+      <tr>
+        <td>지급일</td>
+        <td>${item.payDate || item.workDate || "-"}</td>
+      </tr>
+    `
+    : `
+      <tr>
+        <td>운행일</td>
+        <td>${item.workDate || "-"}</td>
+      </tr>
+      <tr>
+        <td>지급일</td>
+        <td>${item.payDate || "-"}</td>
+      </tr>
+    `
+}
 
       <tr><td>배송건수</td><td>${Number(item.deliveryCount || 0).toLocaleString()}건</td></tr>
       <tr><td>오배송</td><td>${Number(item.wrongDeliveryCount || 0).toLocaleString()}건</td></tr>

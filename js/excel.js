@@ -42,6 +42,10 @@ async function handleExcelUpload(type) {
     alert("날짜와 엑셀 파일을 선택해주세요.");
     return;
   }
+  if (type === "weekly" && !isFriday(workDate)) {
+  alert("주정산 날짜는 금요일만 선택할 수 있습니다.");
+  return;
+}
 
   excelMsg.innerText =
     type === "nextDay"
@@ -146,7 +150,19 @@ if (type === "nextDay") {
     - transferFee
     - taxPay;
 }
-      const payDate = getNextDate(workDate);
+      const payDate =
+  type === "weekly"
+    ? workDate
+    : getNextDate(workDate);
+      let periodStart = workDate;
+let periodEnd = workDate;
+
+if (type === "weekly") {
+  const weeklyPeriod = getWeeklyPeriod(workDate);
+
+  periodStart = weeklyPeriod.startDate;
+  periodEnd = weeklyPeriod.endDate;
+}
 
       await addDoc(collection(db, "settlements"), {
         uid: rider.uid,
@@ -155,6 +171,9 @@ if (type === "nextDay") {
 
         workDate,
         payDate,
+
+        periodStart,
+        periodEnd,
 
         settlementType: type,
         deliveryCount,
@@ -320,3 +339,69 @@ function normalize(value) {
     .replace(/원/g, "")
     .trim();
 }
+function getWeeklyPeriod(fridayDateString) {
+  const friday = new Date(`${fridayDateString}T00:00:00`);
+
+  // 선택한 금요일 기준 9일 전 = 전주 수요일
+  const startDate = new Date(friday);
+  startDate.setDate(friday.getDate() - 9);
+
+  // 선택한 금요일 기준 3일 전 = 화요일
+  const endDate = new Date(friday);
+  endDate.setDate(friday.getDate() - 3);
+
+  return {
+    startDate: formatDateValue(startDate),
+    endDate: formatDateValue(endDate)
+  };
+}
+
+function formatDateValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function isFriday(dateString) {
+  const date = new Date(`${dateString}T00:00:00`);
+  return date.getDay() === 5;
+}
+function loadWeeklyDates() {
+
+  const select = document.getElementById("weeklyExcelWorkDate");
+
+  if (!select) return;
+
+ select.innerHTML = `<option value="">주정산 지급일 선택</option>`;
+
+  const today = new Date();
+
+  // 오늘 기준 1년치 금요일 생성
+  for (let i = -180; i <= 180; i++) {
+
+    const date = new Date(today);
+
+    date.setDate(today.getDate() + i);
+
+    if (date.getDay() !== 5) continue;
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+
+    const value = `${yyyy}-${mm}-${dd}`;
+
+    const option = document.createElement("option");
+
+    option.value = value;
+
+    option.innerText = `${value} (금)`;
+
+    select.appendChild(option);
+
+  }
+
+}
+loadWeeklyDates();

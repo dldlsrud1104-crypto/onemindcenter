@@ -183,19 +183,35 @@ function renderDateFilter() {
       .filter(Boolean)
   )];
 
-  settlementDateFilter.innerHTML = `<option value="all">전체 날짜</option>`;
+  settlementDateFilter.innerHTML =
+    `<option value="all">전체 날짜</option>`;
 
   dates.forEach((date) => {
-  const types = mySettlements
-    .filter((s) => s.workDate === date)
-    .map((s) => s.settlementType === "nextDay" ? "익일정산" : "주정산");
+    const items = mySettlements.filter(
+      (s) => s.workDate === date
+    );
 
-  const typeText = [...new Set(types)].join(" / ");
+    const weeklyItem = items.find(
+      (s) => s.settlementType === "weekly"
+    );
 
-  settlementDateFilter.innerHTML += `
-    <option value="${date}">${date} (${typeText})</option>
-  `;
-});
+    let optionText = "";
+
+    if (weeklyItem) {
+      optionText =
+        `${formatDateWithDay(date)} 주정산 ` +
+        `(${formatDateWithDay(weeklyItem.periodStart)} ~ ` +
+        `${formatDateWithDay(weeklyItem.periodEnd)})`;
+    } else {
+      optionText = `${formatDateWithDay(date)} 익일정산`;
+    }
+
+    const option = document.createElement("option");
+    option.value = date;
+    option.textContent = optionText;
+
+    settlementDateFilter.appendChild(option);
+  });
 
   settlementDateFilter.value = dates.includes(currentValue)
     ? currentValue
@@ -277,8 +293,18 @@ function openSettlementModal(item) {
 
       <div class="receipt-head">
         <h2>${item.name || "-"} 기사님</h2>
-        <p>${typeText} · ${item.workDate || "-"}</p>
-        <p>지급일 ${item.payDate || "-"}</p>
+       ${
+  item.settlementType === "weekly"
+    ? `
+      <p>주정산</p>
+      <p>운행기간 ${item.periodStart || "-"} ~ ${item.periodEnd || "-"}</p>
+      <p>지급일 ${item.payDate || item.workDate || "-"}</p>
+    `
+    : `
+      <p>익일정산 · 운행일 ${item.workDate || "-"}</p>
+      <p>지급일 ${item.payDate || "-"}</p>
+    `
+}
       </div>
 
       <div class="receipt-section">
@@ -667,4 +693,12 @@ if (profileBtn) {
   profileBtn.onclick = () => {
     openProfileModal();
   };
+}
+function formatDateWithDay(dateString) {
+  if (!dateString) return "-";
+
+  const date = new Date(`${dateString}T00:00:00`);
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+
+  return `${dateString}(${days[date.getDay()]})`;
 }
