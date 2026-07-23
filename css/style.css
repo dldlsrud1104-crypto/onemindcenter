@@ -1577,3 +1577,29 @@ width:calc(100% - 36px);
 .public-promo-card{
   margin-top:16px;
 }
+.home-call a{
+    display:block;
+    color:#ef4444;
+    text-decoration:none;
+    font-size:22px;
+    font-weight:900;
+    margin-bottom:10px;
+}
+
+.owner-name{
+    color:#fff;
+    font-size:18px;
+    font-weight:700;
+    margin-right:10px;
+}
+
+.phone-number{
+    color:#ef4444;
+}
+.register-guide{
+    margin-top:15px;
+    font-size:15px;
+    color:#fff;
+    text-align:center;
+    line-height:1.6;
+}
